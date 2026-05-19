@@ -15,7 +15,7 @@ import "./App.css";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const RangeSlider = (RangeSliderInput as any).default || RangeSliderInput;
 
-function App() {
+function LottieConverter() {
   const [file, setFile] = useState<File | null>(null);
   const [animData, setAnimData] = useState<Record<string, unknown> | null>(null);
   const [animInfo, setAnimInfo] = useState<{ frames: number; fps: number; width: number; height: number } | null>(null);
@@ -396,6 +396,41 @@ function App() {
         </div>
       )}
       {error && <p className="error">{error}</p>}
+    </div>
+  );
+}
+
+function App() {
+  // 1. 초기 상태 결정 시점에 리다이렉트 동기 처리
+  const [currentPath, setCurrentPath] = useState(() => {
+    const path = window.location.pathname;
+    if (path === "/") {
+      window.history.replaceState({}, "", "/lottie");
+      return "/lottie";
+    }
+    return path;
+  });
+
+  useEffect(() => {
+    // 2. 이펙트는 순수하게 외부 브라우저 이벤트(popstate)만 구독
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // 2. 패스에 따른 조건부 렌더링
+  if (currentPath === "/lottie") {
+    return <LottieConverter />;
+  }
+
+  // 향후 다른 유틸리티가 추가되면 이곳에 분기 추가 가능
+  // else if (currentPath === "/another-tool") { ... }
+
+  return (
+    <div style={{ padding: "4rem 2rem", textAlign: "center", color: "#aaa", fontFamily: "sans-serif" }}>
+      페이지를 찾을 수 없거나 이동 중입니다...
     </div>
   );
 }
